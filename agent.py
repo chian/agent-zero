@@ -102,11 +102,32 @@ class Agent:
                     for chunk in chain.stream(inputs):
                         if self.handle_intervention(agent_response): break # wait for intervention and handle it, if paused
 
+                        try:
+                            response_data = json.loads(chunk)
+                            if 'function_call' in response_data:
+                                # Handle function call
+                                function_call = response_data['function_call']
+                                # Add your function call handling logic here
+                                print(f"Function call: {function_call}")
+                            elif 'tool_calls' in response_data:
+                                # Handle tool calls
+                                tool_calls = response_data['tool_calls']
+                                # Add your tool calls handling logic here
+                                print(f"Tool calls: {tool_calls}")
+                            
+                            content = response_data.get('response', '')
+                        except json.JSONDecodeError:
+                            # If it's not JSON, treat it as regular content
+                            if isinstance(chunk, str): content = chunk
+                            elif hasattr(chunk, "content"): content = str(chunk.content)
+                            else: content = str(chunk)
+                        if self.handle_intervention(agent_response): break # wait for intervention and handle it, if paused
+
                         if isinstance(chunk, str): content = chunk
                         elif hasattr(chunk, "content"): content = str(chunk.content)
                         else: content = str(chunk)
                         
-                        if content:
+                        if content and isinstance(content, str):
                             printer.stream(content) # output the agent response stream                
                             agent_response += content # concatenate stream into the response
 

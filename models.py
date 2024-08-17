@@ -1,4 +1,5 @@
-import os
+from ARGO import ArgoWrapper, ArgoEmbeddingWrapper
+from ArgoLLM import ArgoLLM
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI, OpenAI, OpenAIEmbeddings, AzureChatOpenAI, AzureOpenAIEmbeddings, AzureOpenAI
 from langchain_community.llms.ollama import Ollama
@@ -8,7 +9,7 @@ from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI, HarmBlockThreshold, HarmCategory
 from pydantic.v1.types import SecretStr
-
+import os
 
 # Load environment variables
 load_dotenv()
@@ -16,10 +17,8 @@ load_dotenv()
 # Configuration
 DEFAULT_TEMPERATURE = 0.0
 
-# Utility function to get API keys from environment variables
 def get_api_key(service):
     return os.getenv(f"API_KEY_{service.upper()}") or os.getenv(f"{service.upper()}_API_KEY")
-
 
 # Ollama models
 def get_ollama_chat(model_name:str, temperature=DEFAULT_TEMPERATURE, base_url="http://localhost:11434"):
@@ -83,6 +82,7 @@ def get_groq_chat(model_name:str, api_key=None, temperature=DEFAULT_TEMPERATURE)
     api_key = api_key or get_api_key("groq")
     return ChatGroq(model_name=model_name, temperature=temperature, api_key=api_key) # type: ignore
    
+
 # OpenRouter models
 def get_openrouter(model_name: str="meta-llama/llama-3.1-8b-instruct:free", api_key=None, temperature=DEFAULT_TEMPERATURE):
     api_key = api_key or get_api_key("openrouter")
@@ -94,3 +94,13 @@ def get_embedding_hf(model_name="sentence-transformers/all-MiniLM-L6-v2"):
 def get_embedding_openai(api_key=None):
     api_key = api_key or get_api_key("openai")
     return OpenAIEmbeddings(api_key=api_key) #type: ignore
+
+# Argo models
+#def get_argo_chat(argo, model_name:str = "gpt4", temperature=DEFAULT_TEMPERATURE):
+#    return ARGO_LLM(argo, model_type=model_name, temperature=temperature)
+
+def get_argo_chat(model_name:str = "gpt4", temperature=DEFAULT_TEMPERATURE):
+    return ArgoLLM(model_name=model_name, temperature=temperature)
+
+def get_argo_embedding():
+    return ArgoEmbeddingWrapper()

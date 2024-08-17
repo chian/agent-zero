@@ -1,11 +1,12 @@
 import threading, time, models, os
-from ansio import application_keypad, mouse_input, raw_input
+from ansio import application_keypad, mouse_input
 from ansio.input import InputEvent, get_input_event
 from agent import Agent, AgentConfig
 from python.helpers.print_style import PrintStyle
 from python.helpers.files import read_file
 from python.helpers import files
 import python.helpers.timed_input as timed_input
+#from ARGO import ArgoWrapper
 
 
 input_lock = threading.Lock()
@@ -15,7 +16,10 @@ os.chdir(files.get_abs_path("./work_dir")) #change CWD to work_dir
 def initialize():
     
     # main chat model used by agents (smarter, more accurate)
-    chat_llm = models.get_openai_chat(model_name="gpt-4o-mini", temperature=0)
+    #chat_llm = models.get_openai_chat(model_name="gpt-4o-mini", temperature=0)
+    #argo_wrapper_instance = ArgoWrapper()
+    #chat_llm = models.get_argo_chat(argo_wrapper_instance, model_name="gpt4o", temperature=0)
+    chat_llm = models.get_argo_chat(model_name="gpt4o", temperature=0)
     # chat_llm = models.get_ollama_chat(model_name="gemma2:latest", temperature=0)
     # chat_llm = models.get_lmstudio_chat(model_name="TheBloke/Mistral-7B-Instruct-v0.2-GGUF", temperature=0)
     # chat_llm = models.get_openrouter(model_name="meta-llama/llama-3-8b-instruct:free")
@@ -28,7 +32,8 @@ def initialize():
     utility_llm = chat_llm # change if you want to use a different utility model
 
     # embedding model used for memory
-    embedding_llm = models.get_openai_embedding(model_name="text-embedding-3-small")
+    embedding_llm = models.get_argo_embedding()
+    # embedding_llm = models.get_argo_embedding()
     # embedding_llm = models.get_ollama_embedding(model_name="nomic-embed-text")
     # embedding_llm = models.get_huggingface_embedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -137,10 +142,10 @@ def capture_keys():
             
             if Agent.streaming_agent:
                 # with raw_input, application_keypad, mouse_input:
-                with input_lock, raw_input, application_keypad:
-                    event: InputEvent | None = get_input_event(timeout=0.1)
-                    if event and (event.shortcut.isalpha() or event.shortcut.isspace()):
-                        intervent=True
+                with input_lock:
+                    user_input = input("Press any key to intervene: ")
+                    if user_input:
+                        intervent = True
                         continue
 
 # User input with timeout
